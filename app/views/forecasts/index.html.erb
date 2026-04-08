@@ -1,0 +1,108 @@
+<% content_for :title, "Weather Forecast" %>
+
+<div class="weather-app">
+  <header class="app-header">
+    <h1>Weather Forecast</h1>
+    <p class="subtitle">Enter an address to get the current forecast</p>
+  </header>
+
+  <section class="search-section">
+    <%= form_with url: root_path, method: :get, local: true, class: "search-form" do |f| %>
+      <div class="input-group">
+        <%= f.text_field :address,
+              value: params[:address],
+              placeholder: "e.g. 1 Apple Park Way, Cupertino, CA 95014",
+              class: "address-input",
+              autofocus: true,
+              autocomplete: "off" %>
+        <%= f.submit "Get Forecast", class: "search-btn" %>
+      </div>
+    <% end %>
+  </section>
+
+  <% if @error %>
+    <div class="alert alert-error">
+      <span class="alert-icon">&#9888;</span>
+      <%= @error %>
+    </div>
+  <% end %>
+
+  <% if @forecast %>
+    <section class="forecast-section">
+
+      <% if @from_cache %>
+        <div class="cache-badge">
+          <span class="cache-icon">&#128190;</span>
+          Served from cache &mdash; results are cached for 30 minutes
+          <% if @forecast[:zip] %>
+            (ZIP: <%= @forecast[:zip] %>)
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="current-weather card">
+        <div class="location-header">
+          <h2><%= @forecast[:location] %></h2>
+          <% if @forecast[:zip] %>
+            <span class="zip-tag">ZIP <%= @forecast[:zip] %></span>
+          <% end %>
+        </div>
+
+        <div class="current-main">
+          <div class="temp-display">
+            <img src="https://openweathermap.org/img/wn/<%= @forecast[:icon] %>@2x.png"
+                 alt="<%= @forecast[:description] %>"
+                 class="weather-icon">
+            <span class="current-temp"><%= @forecast[:current_temp] %>&deg;F</span>
+          </div>
+          <div class="current-details">
+            <p class="description"><%= @forecast[:description] %></p>
+            <div class="stats-grid">
+              <div class="stat">
+                <span class="stat-label">Feels Like</span>
+                <span class="stat-value"><%= @forecast[:feels_like] %>&deg;F</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">High</span>
+                <span class="stat-value"><%= @forecast[:temp_high] %>&deg;F</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Low</span>
+                <span class="stat-value"><%= @forecast[:temp_low] %>&deg;F</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Humidity</span>
+                <span class="stat-value"><%= @forecast[:humidity] %>%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <% if @forecast[:daily_forecasts].any? %>
+        <div class="extended-forecast card">
+          <h3>5-Day Forecast</h3>
+          <div class="forecast-days">
+            <% @forecast[:daily_forecasts].each_with_index do |day, index| %>
+              <div class="forecast-day">
+                <span class="day-name">
+                  <%= index == 0 ? "Today" : day[:date].strftime("%a") %>
+                </span>
+                <img src="https://openweathermap.org/img/wn/<%= day[:icon] %>@2x.png"
+                     alt="<%= day[:description] %>"
+                     class="day-icon">
+                <span class="day-desc"><%= day[:description] %></span>
+                <div class="day-temps">
+                  <span class="day-high"><%= day[:temp_high] %>&deg;</span>
+                  <span class="day-sep">/</span>
+                  <span class="day-low"><%= day[:temp_low] %>&deg;</span>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+    </section>
+  <% end %>
+</div>
